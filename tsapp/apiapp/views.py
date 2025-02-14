@@ -3,23 +3,33 @@ from rest_framework import generics, permissions, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.contrib.auth import authenticate
+from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
 from .models import User, Service, Booking, Payment,ServiceCategory
 from .serializers import (
     UserProfileSerializer, ServiceSerializer, BookingSerializer,
     PaymentSerializer, UserRegisterSerializer, TechnicianSerializer,
-     ServiceCategorySerializer
+     ServiceCategorySerializer,TechnicianRegisterSerializer,RegisterSerializer
 )
 
 # 🔹 1️⃣ User Authentication & Management APIs
 
 class RegisterView(APIView):
     def post(self, request):
-        serializer = UserRegisterSerializer(data=request.data)
+        serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
-            return Response({"message": "User registered successfully!"}, status=status.HTTP_201_CREATED)
+            return Response({
+                "message": f"{user.user_type.capitalize()} registered successfully!",
+                "user": {
+                    "id": user.id,
+                    "name": user.name,
+                    "phone": user.phone,
+                    "user_type": user.user_type
+                }
+            }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class LoginView(APIView):
     def post(self, request):
@@ -115,9 +125,12 @@ class RescheduleBookingView(APIView):
 
 # 🔹 4️⃣ Technician Management API
 
+
 class TechnicianListView(generics.ListAPIView):
-    queryset = User.objects.filter(user_type="technician")
     serializer_class = TechnicianSerializer
+
+    def get_queryset(self):
+        return User.objects.filter(user_type="technician") 
 
 class TechnicianDetailView(generics.RetrieveAPIView):
     queryset = User.objects.filter(user_type="technician")
@@ -187,3 +200,8 @@ class AdminServiceDeleteView(generics.DestroyAPIView):
     permission_classes = [permissions.IsAdminUser]
     queryset = Service.objects.all()
     serializer_class = ServiceSerializer
+
+class TechnicianRegisterView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = TechnicianRegisterSerializer
+    permission_classes = [AllowAny]  

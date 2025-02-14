@@ -9,6 +9,22 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         return User.objects.create_user(**validated_data)
+from rest_framework import serializers
+from .models import User
+
+class RegisterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["name", "phone", "user_type"]  # Add user_type field
+
+    def create(self, validated_data):
+        # Validate user_type to be one of the allowed values
+        user_type = validated_data.get("user_type", "customer").lower()
+        if user_type not in ["customer", "technician", "admin"]:
+            raise serializers.ValidationError({"user_type": "Invalid user type"})
+
+        # Create user with the correct type
+        return User.objects.create(**validated_data)
 
 # User Profile Serializer (Allows Address Update)
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -41,14 +57,21 @@ class BookingSerializer(serializers.ModelSerializer):
 
 # Technician Serializer (Includes User Details)
 class TechnicianSerializer(serializers.ModelSerializer):
-    user = UserProfileSerializer()  # Fetch technician's associated user details
-
     class Meta:
-        model = Technician
-        fields = '__all__'
+        model = User
+        fields = ['id', 'name', 'phone', 'user_type', 'address', 'skill_profession']  # ✅ 
 
 # Payment Serializer (Hides Sensitive Fields)
 class PaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Payment
         exclude = ['transaction_id']  # Hide sensitive transaction details if needed
+
+class TechnicianRegisterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['name', 'phone', 'location', 'skill_profession', 'user_type']
+
+    def create(self, validated_data):
+        validated_data['user_type'] = 'technician'  # Auto-set to technician
+        return User.objects.create(**validated_data)

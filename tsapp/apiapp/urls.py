@@ -7,7 +7,7 @@ from .views import (
     InitiatePaymentView, PaymentStatusView, RefundPaymentView,
     AdminBookingListView, AdminUserListView,
     AdminServiceCreateView, AdminServiceUpdateView, AdminServiceDeleteView,
-    ServiceByCategoryView,ServiceCategoryListView
+    ServiceByCategoryView,ServiceCategoryListView,TechnicianRegisterView
 )
 
 urlpatterns = [
@@ -29,6 +29,10 @@ urlpatterns = [
     path("bookings/<int:pk>/reschedule/", RescheduleBookingView.as_view(), name="booking-reschedule"),
 
     # 🔹 4️⃣ Technicians
+    # 🔹 Technician Authentication APIs
+    path("auth/technician/register/", TechnicianRegisterView.as_view(), name="technician-register"),
+    path("auth/technician/login/", LoginView.as_view(), name="technician-login"),
+
     path("technicians/", TechnicianListView.as_view(), name="technician-list"),
     path("technicians/<int:pk>/", TechnicianDetailView.as_view(), name="technician-detail"),
     path("bookings/<int:pk>/assign-technician/", AssignTechnicianView.as_view(), name="assign-technician"),
