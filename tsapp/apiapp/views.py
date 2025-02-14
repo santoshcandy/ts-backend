@@ -4,10 +4,11 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
-from .models import User, Service, Booking, Payment
+from .models import User, Service, Booking, Payment,ServiceCategory
 from .serializers import (
     UserProfileSerializer, ServiceSerializer, BookingSerializer,
-    PaymentSerializer, UserRegisterSerializer, TechnicianSerializer
+    PaymentSerializer, UserRegisterSerializer, TechnicianSerializer,
+     ServiceCategorySerializer
 )
 
 # 🔹 1️⃣ User Authentication & Management APIs
@@ -53,10 +54,18 @@ class LogoutView(APIView):
 
 # 🔹 2️⃣ Service Listings & Search API
 
-class ServiceListView(generics.ListAPIView):
-    queryset = Service.objects.all()
+class ServiceCategoryListView(generics.ListAPIView):
+    queryset = ServiceCategory.objects.all()
+    serializer_class = ServiceCategorySerializer
+
+# Get Services by Category (All services inside a category)
+class ServiceByCategoryView(generics.ListAPIView):
     serializer_class = ServiceSerializer
 
+    def get_queryset(self):
+        category_id = self.kwargs['category_id']
+        return Service.objects.filter(category_id=category_id)
+    
 class ServiceDetailView(generics.RetrieveAPIView):
     queryset = Service.objects.all()
     serializer_class = ServiceSerializer

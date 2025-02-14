@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Service, Booking, Technician, Payment
+from .models import User, Service, Booking, Technician, Payment,ServiceCategory
 
 # User Registration Serializer
 class UserRegisterSerializer(serializers.ModelSerializer):
@@ -22,6 +22,13 @@ class ServiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Service
         fields = '__all__'
+
+class ServiceCategorySerializer(serializers.ModelSerializer):
+    services = ServiceSerializer(many=True, read_only=True)  # Get all related services
+
+    class Meta:
+        model = ServiceCategory
+        fields = ['id', 'name', 'description', 'services']
 
 # Booking Serializer
 class BookingSerializer(serializers.ModelSerializer):

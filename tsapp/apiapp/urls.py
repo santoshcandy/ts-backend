@@ -1,12 +1,13 @@
 from django.urls import path
 from .views import (
     RegisterView, LoginView, UserProfileView, LogoutView,
-    ServiceListView, ServiceDetailView, ServiceSearchView,
+      ServiceDetailView, ServiceSearchView,
     BookingCreateView, BookingDetailView, CancelBookingView, RescheduleBookingView,
     TechnicianListView, TechnicianDetailView, AssignTechnicianView,
     InitiatePaymentView, PaymentStatusView, RefundPaymentView,
     AdminBookingListView, AdminUserListView,
-    AdminServiceCreateView, AdminServiceUpdateView, AdminServiceDeleteView
+    AdminServiceCreateView, AdminServiceUpdateView, AdminServiceDeleteView,
+    ServiceByCategoryView,ServiceCategoryListView
 )
 
 urlpatterns = [
@@ -17,8 +18,8 @@ urlpatterns = [
     path("auth/logout/", LogoutView.as_view(), name="logout"),
 
     # 🔹 2️⃣ Services
-    path("services/", ServiceListView.as_view(), name="service-list"),
-    path("services/<int:pk>/", ServiceDetailView.as_view(), name="service-detail"),
+    path("service-categories/", ServiceCategoryListView.as_view(), name="service-category-list"),
+    path("services/category/<int:category_id>/", ServiceByCategoryView.as_view(), name="services-by-category"),
     path("services/search/", ServiceSearchView.as_view(), name="service-search"),
 
     # 🔹 3️⃣ Bookings
