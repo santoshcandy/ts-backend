@@ -3,7 +3,7 @@ from rest_framework import generics, permissions, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.contrib.auth import authenticate
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from .models import User, Service, Booking, Payment,ServiceCategory
 from .serializers import (
@@ -11,6 +11,8 @@ from .serializers import (
     PaymentSerializer, UserRegisterSerializer, TechnicianSerializer,
      ServiceCategorySerializer,TechnicianRegisterSerializer,RegisterSerializer
 )
+from django.contrib.auth import get_user_model
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 # 🔹 1️⃣ User Authentication & Management APIs
 
@@ -31,25 +33,53 @@ class RegisterView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+
 class LoginView(APIView):
     def post(self, request):
         phone = request.data.get("phone")
         user = get_object_or_404(User, phone=phone)
 
         refresh = RefreshToken.for_user(user)
+        
+        # Generate the access and refresh tokens
+        access_token = str(refresh.access_token)
+        refresh_token = str(refresh)
+
         return Response({
-            "user": UserProfileSerializer(user).data,
-            "refresh": str(refresh),
-            "access": str(refresh.access_token),
+            "user": {
+                "id": user.id,
+                "phone": user.phone,
+                "name": user.name,
+                "user_type": user.user_type,
+            },
+            "access": access_token,
+            "refresh": refresh_token
         }, status=status.HTTP_200_OK)
+    
 
 class UserProfileView(generics.RetrieveUpdateAPIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [AllowAny]
     serializer_class = UserProfileSerializer
 
     def get_object(self):
+        print("Request User:", self.request.user)  # Debugging line
         return self.request.user
 
+class ProfileView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        return Response({
+            "message": "Profile fetched successfully",
+            "user": {
+                "id": request.user.id,
+                "name": request.user.name,
+                "phone": request.user.phone,
+                "user_type": request.user.user_type,
+                "address": request.user.address,
+            }
+        })
 class LogoutView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -90,11 +120,19 @@ class ServiceSearchView(generics.ListAPIView):
 # 🔹 3️⃣ Booking & Scheduling API
 
 class BookingCreateView(generics.CreateAPIView):
-    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
     serializer_class = BookingSerializer
 
     def perform_create(self, serializer):
-        serializer.save(customer=self.request.user)
+        # Automatically set the customer to the authenticated user
+        booking = serializer.save(customer=self.request.user)
+        
+        # If the request contains services, associate them with the booking
+        if 'services' in self.request.data:
+            services = self.request.data['services']
+            booking.services.set(services)  # Add multiple services to the booking
+            booking.save()
 
 class BookingDetailView(generics.RetrieveAPIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -205,3 +243,11 @@ class TechnicianRegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = TechnicianRegisterSerializer
     permission_classes = [AllowAny]  
+
+
+
+class ProtectedView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        return Response({"message": "Token is valid!", "user": str(request.user)})

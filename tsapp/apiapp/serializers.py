@@ -47,15 +47,19 @@ class ServiceCategorySerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'description', 'services']
 
 # Booking Serializer
+
 class BookingSerializer(serializers.ModelSerializer):
-    customer = UserProfileSerializer(read_only=True)  # To avoid exposing unnecessary details
-    technician = serializers.PrimaryKeyRelatedField(queryset=Technician.objects.all(), allow_null=True)
+    technician = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.filter(user_type='technician'),
+        required=False,
+        allow_null=True  # Allow null if technician is not assigned
+    )
+    services = serializers.PrimaryKeyRelatedField(queryset=Service.objects.all(), many=True)
 
     class Meta:
         model = Booking
-        fields = '__all__'
-
-# Technician Serializer (Includes User Details)
+        fields = ['id', 'customer', 'services', 'technician', 'service_location', 'status', 'booking_date']
+        read_only_fields = ['customer']
 class TechnicianSerializer(serializers.ModelSerializer):
     class Meta:
         model = User

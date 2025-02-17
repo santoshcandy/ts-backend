@@ -83,7 +83,6 @@ class Service(models.Model):
     def __str__(self):
         return self.name
  
-# Booking Model (Fixing reverse accessor clashes)
 class Booking(models.Model):
     STATUS_CHOICES = (
         ('pending', 'Pending'),
@@ -96,7 +95,7 @@ class Booking(models.Model):
         User, on_delete=models.CASCADE, related_name="customer_bookings",
         limit_choices_to={'user_type': 'customer'}
     )
-    service = models.ForeignKey(Service, on_delete=models.CASCADE)
+    services = models.ManyToManyField(Service)  # Many-to-many relationship for multiple services
     technician = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True, blank=True,
         related_name="technician_bookings", limit_choices_to={'user_type': 'technician'}
@@ -108,7 +107,7 @@ class Booking(models.Model):
     service_location = models.TextField()
 
     def __str__(self):
-        return f"Booking {self.id} - {self.service.name} for {self.customer.name}"
+        return f"Booking {self.id} for {self.customer.name}"
 
 # Technician Model
 class Technician(models.Model):

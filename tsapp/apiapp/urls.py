@@ -7,16 +7,17 @@ from .views import (
     InitiatePaymentView, PaymentStatusView, RefundPaymentView,
     AdminBookingListView, AdminUserListView,
     AdminServiceCreateView, AdminServiceUpdateView, AdminServiceDeleteView,
-    ServiceByCategoryView,ServiceCategoryListView,TechnicianRegisterView
+    ServiceByCategoryView,ServiceCategoryListView,TechnicianRegisterView,ProfileView,ProtectedView
 )
 
 urlpatterns = [
     # 🔹 1️⃣ User Authentication
     path("auth/register/", RegisterView.as_view(), name="register"),
     path("auth/login/", LoginView.as_view(), name="login"),
-    path("auth/profile/", UserProfileView.as_view(), name="profile"),
+    path("auth/profile/", ProfileView.as_view(), name="profile"),
     path("auth/logout/", LogoutView.as_view(), name="logout"),
 
+  path('api/protected/', ProtectedView.as_view(), name='protected'),
     # 🔹 2️⃣ Services
     path("service-categories/", ServiceCategoryListView.as_view(), name="service-category-list"),
     path("services/category/<int:category_id>/", ServiceByCategoryView.as_view(), name="services-by-category"),

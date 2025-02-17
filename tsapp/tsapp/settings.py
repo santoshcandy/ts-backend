@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
+from datetime import timedelta
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -29,6 +30,8 @@ ALLOWED_HOSTS = []
 
 
 # Application definition
+# In settings.py
+# AUTH_USER_MODEL = 'apiapp.User'
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -38,29 +41,31 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     "rest_framework",
-    'corsheaders',
-    'rest_framework_simplejwt',
+    "rest_framework_simplejwt",
+    "corsheaders",
     "apiapp",
 ]
-# REST_FRAMEWORK = {
-#     'DEFAULT_AUTHENTICATION_CLASSES': (
-#         'rest_framework_simplejwt.authentication.JWTAuthentication',
-#     ),
-# }
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',  # 🔹 Comment this for testing
-    ],
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',  # 🔹 Allow all requests without authentication
-    ],
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
+    # "DEFAULT_PERMISSION_CLASSES": [
+    #     "rest_framework.permissions.IsAuthenticated",
+    # ],
 }
-
-from datetime import timedelta
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),  # or any expiration time you prefer
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=5),    # or any expiration time you prefer
+    'ROTATE_REFRESH_TOKENS': False,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'ALGORITHM': 'HS256',  # Ensure this matches the algorithm used when signing
+    'SIGNING_KEY': 'your-secret-key-here',  # This should be your secret key
+    'VERIFYING_KEY': None,  # You don't need this unless you're using public/private key pair
+    'AUTH_HEADER_TYPES': ('Bearer',),
 }
+# AUTH_USER_MODEL = "apiapp.CustomUser"
+AUTH_USER_MODEL = 'apiapp.User'
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -69,9 +74,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-     'corsheaders.middleware.CorsMiddleware',
-    #  'rest_framework_simplejwt.authentication.JWTAuthentication',
-]
+      "corsheaders.middleware.CorsMiddleware",
+ 
+ ]
 
 ROOT_URLCONF = 'tsapp.urls'
 
