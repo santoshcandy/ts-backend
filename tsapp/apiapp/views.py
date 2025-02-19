@@ -33,15 +33,18 @@ class RegisterView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+ 
+User = get_user_model()
 
 class LoginView(APIView):
     def post(self, request):
         phone = request.data.get("phone")
-        user = get_object_or_404(User, phone=phone)
 
+        # Check if the user exists
+        user, created = User.objects.get_or_create(phone=phone, defaults={"name": "", "user_type": "customer"}) 
+
+        # Generate tokens
         refresh = RefreshToken.for_user(user)
-        
-        # Generate the access and refresh tokens
         access_token = str(refresh.access_token)
         refresh_token = str(refresh)
 
@@ -53,9 +56,10 @@ class LoginView(APIView):
                 "user_type": user.user_type,
             },
             "access": access_token,
-            "refresh": refresh_token
+            "refresh": refresh_token,
+            "message": "User registered and logged in successfully" if created else "User logged in successfully"
         }, status=status.HTTP_200_OK)
-    
+
 
 class UserProfileView(generics.RetrieveUpdateAPIView):
     permission_classes = [AllowAny]
