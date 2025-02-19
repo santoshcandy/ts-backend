@@ -134,11 +134,68 @@ class BookingCreateView(generics.CreateAPIView):
             booking.services.set(services)  # Add multiple services to the booking
             booking.save()
 
-class BookingDetailView(generics.RetrieveAPIView):
-    permission_classes = [permissions.IsAuthenticated]
-    serializer_class = BookingSerializer
-    queryset = Booking.objects.all()
 
+ 
+
+ 
+
+# User = get_user_model()
+
+# class BookingCreateView(generics.CreateAPIView):
+#     permission_classes = [AllowAny]  # Allow booking without login
+#     serializer_class = BookingSerializer
+
+#     def post(self, request, *args, **kwargs):
+#         phone = request.data.get("phone")
+#         if not phone:
+#             return Response({"error": "Phone number is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+#         # Log incoming request for debugging
+#         print("Received booking request:", request.data)
+
+#         # Check if the user exists
+#         user = User.objects.filter(phone=phone).first()
+#         if not user:
+#             # If user doesn't exist, register them
+#             user = User.objects.create(phone=phone, user_type="customer")
+#             user.set_unusable_password()
+#             user.save()
+
+#         # Generate tokens
+#         refresh = RefreshToken.for_user(user)
+#         access_token = str(refresh.access_token)
+
+#         # Validate and create booking
+#         serializer = self.get_serializer(data=request.data)
+#         if serializer.is_valid():
+#             serializer.save(customer=user)  # Assign booking to user
+#             return Response({
+#                 "message": "Booking successful",
+#                 "booking": serializer.data,
+#                 "access_token": access_token
+#             }, status=status.HTTP_201_CREATED)
+
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+class BookingDetailView(generics.RetrieveAPIView):
+    serializer_class = BookingSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Get the authenticated user and filter bookings for this user
+        user = self.request.user
+        return Booking.objects.filter(customer=user)
+    
+class UserBookingListView(generics.ListAPIView):
+    serializer_class = BookingSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Get the authenticated user and filter bookings for this user
+        user = self.request.user
+        return Booking.objects.filter(customer=user)
 class CancelBookingView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -160,6 +217,12 @@ class RescheduleBookingView(APIView):
             booking.save()
             return Response({"message": "Booking rescheduled successfully!"}, status=status.HTTP_200_OK)
         return Response({"error": "New date is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AllUserBookingListView(generics.ListAPIView):
+    serializer_class = BookingSerializer
+    permission_classes = [IsAuthenticated]
+    queryset = Booking.objects.all().order_by('-booking_date')
 
 # 🔹 4️⃣ Technician Management API
 

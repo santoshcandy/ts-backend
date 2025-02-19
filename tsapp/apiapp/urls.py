@@ -7,7 +7,8 @@ from .views import (
     InitiatePaymentView, PaymentStatusView, RefundPaymentView,
     AdminBookingListView, AdminUserListView,
     AdminServiceCreateView, AdminServiceUpdateView, AdminServiceDeleteView,
-    ServiceByCategoryView,ServiceCategoryListView,TechnicianRegisterView,ProfileView,ProtectedView
+    ServiceByCategoryView,ServiceCategoryListView,TechnicianRegisterView,ProfileView,ProtectedView,
+    UserBookingListView, AllUserBookingListView
 )
 
 urlpatterns = [
@@ -25,6 +26,9 @@ urlpatterns = [
 
     # 🔹 3️⃣ Bookings
     path("bookings/create/", BookingCreateView.as_view(), name="booking-create"),
+    path("bookings/", UserBookingListView.as_view(), name="user-booking-list"), 
+    path("bookings/all", AllUserBookingListView.as_view(), name="all-booking-list"), 
+
     path("bookings/<int:pk>/", BookingDetailView.as_view(), name="booking-detail"),
     path("bookings/<int:pk>/cancel/", CancelBookingView.as_view(), name="booking-cancel"),
     path("bookings/<int:pk>/reschedule/", RescheduleBookingView.as_view(), name="booking-reschedule"),

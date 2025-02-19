@@ -83,6 +83,21 @@ class Service(models.Model):
     def __str__(self):
         return self.name
  
+
+
+class UserSelectedService(models.Model):
+    user = models.ForeignKey(User, related_name='selected_services', on_delete=models.CASCADE)
+    service = models.ForeignKey(Service, related_name='selected_by_users', on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'service')  # Ensure the user can only select a service once
+
+    def __str__(self):
+        return f"{self.user.username} - {self.service.name}"
+
+
+
 class Booking(models.Model):
     STATUS_CHOICES = (
         ('pending', 'Pending'),
@@ -109,6 +124,8 @@ class Booking(models.Model):
     def __str__(self):
         return f"Booking {self.id} for {self.customer.name}"
 
+
+
 # Technician Model
 class Technician(models.Model):
     user = models.OneToOneField(
@@ -120,6 +137,8 @@ class Technician(models.Model):
 
     def __str__(self):
         return self.user.name
+
+
 
 # Payment Model
 class Payment(models.Model):
